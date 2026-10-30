@@ -59,6 +59,34 @@ static inline int16_t clamp16(int v)
     return (int16_t)v;
 }
 
+/*
+ * DC blocker (one-pole high-pass, ~3.5 Hz at 44.1 kHz).
+ *
+ * Real sound cards are AC-coupled, so a DAC parked at a non-zero value is
+ * silent.  The emulated ones are not: the BIOS probes the parallel port by
+ * writing 0xAA to it, which leaves the Covox DAC at a constant offset.
+ * That offset is inaudible on its own, but every time the output stream
+ * pauses (start-up, menus, a late audio buffer) the signal jumps between
+ * the offset and zero and you hear a loud repeating click.  Removing DC
+ * here behaves like the coupling capacitor of the real hardware.
+ *
+ *   y[n] = x[n] - x[n-1] + R * y[n-1],   R = 1 - 2^-11
+ */
+typedef struct { int32_t x1; int32_t y1; } DCBlock;
+
+static inline int32_t dc_block(DCBlock *f, int32_t x)
+{
+    /* y1 is kept with 8 fractional bits to avoid limit cycles */
+    /* round the decay away from zero so the filter settles exactly at 0 */
+    int32_t decay = f->y1 > 0 ? (f->y1 + 2047) >> 11 : f->y1 >> 11;
+    int32_t y = ((x - f->x1) << 8) + f->y1 - decay;
+    f->x1 = x;
+    f->y1 = y;
+    return y >> 8;
+}
+
+static DCBlock dc_l, dc_r;
+
 /* Audio clock in 1/SOUND_FREQUENCY steps, converted to µs for the timers. */
 static uint64_t audio_frames;
 
@@ -119,6 +147,9 @@ void audio_render(int16_t *out, int frames)
             /* PC speaker is a 1-bit device; mix it at a moderate level. */
             l += 8000; r += 8000;
         }
+
+        l = dc_block(&dc_l, l);
+        r = dc_block(&dc_r, r);
 
         const uint8_t sh = volume_shift;
         out[2 * i + 0] = sh >= 16 ? 0 : clamp16(l >> sh);

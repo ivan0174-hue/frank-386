@@ -283,21 +283,25 @@ void CKernel::AudioLoop (void)
 		return;
 	}
 
+	// Core 1 does nothing else, so keep the hardware queue well filled:
+	// a late refill would make the output drop to silence for a moment,
+	// which is heard as a click.
 	static s16 Buffer[256 * 2];
-	const unsigned nTargetFrames = SOUND_FREQUENCY * 40 / 1000;	// keep ~40 ms queued
+	const unsigned nQueueFrames = m_pSound->GetQueueSizeFrames ();
+	unsigned nTargetFrames = SOUND_FREQUENCY * 80 / 1000;		// ~80 ms
+	if (nTargetFrames + 256 > nQueueFrames)
+	{
+		nTargetFrames = nQueueFrames > 512 ? nQueueFrames - 512 : nQueueFrames / 2;
+	}
 
 	while (1)
 	{
-		unsigned nQueued = m_pSound->GetQueueFramesAvail ();
-		if (nQueued < nTargetFrames)
+		while (m_pSound->GetQueueFramesAvail () < nTargetFrames)
 		{
 			audio_render (Buffer, 256);
 			m_pSound->Write (Buffer, sizeof Buffer);
 		}
-		else
-		{
-			CTimer::SimpleusDelay (1000);
-		}
+		CTimer::SimpleusDelay (500);
 	}
 }
 
