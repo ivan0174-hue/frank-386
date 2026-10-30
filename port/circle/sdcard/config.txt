@@ -1,0 +1,25 @@
+# FRANK 386 – Raspberry Pi 4 (bare metal)
+# Copy this file to the root of the FAT32 boot partition.
+
+arm_64bit=1
+kernel_address=0x80000
+initial_turbo=0
+
+# Circle needs this ARM stub on the Pi 4 (FIQ support)
+[pi4]
+armstub=armstub8-rpi4.bin
+kernel=kernel8-rpi4.img
+max_framebuffers=2
+
+[all]
+# Use the whole screen (no black border from overscan compensation)
+disable_overscan=1
+# Keep HDMI on even if the monitor is switched on after the Pi
+hdmi_force_hotplug=1
+# Enable HDMI audio
+hdmi_drive=2
+
+# More CPU speed for the emulator (stock Pi 4 is 1500 MHz).
+# Uncomment ONLY with a good heatsink/fan and power supply:
+#over_voltage=6
+#arm_freq=2000

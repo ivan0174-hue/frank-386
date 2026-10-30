@@ -41,7 +41,7 @@ static int after_eq(uint32_t a, uint32_t b)
 #ifdef BUILD_ESP32
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-#elif !defined(RP2350_BUILD) && !defined(__wasm__)
+#elif !defined(RP2350_BUILD) && !defined(__wasm__) && !defined(FRANK_PORT)
 #include <pthread.h>
 #endif
 
@@ -444,7 +444,7 @@ typedef struct {
     int rptr, wptr, count;
 #ifdef BUILD_ESP32
     SemaphoreHandle_t mutex;
-#elif !defined(RP2350_BUILD) && !defined(__wasm__)
+#elif !defined(RP2350_BUILD) && !defined(__wasm__) && !defined(FRANK_PORT)
     pthread_mutex_t mutex;
 #endif
 } PS2Queue;
@@ -490,14 +490,14 @@ void ps2_queue(void *opaque, int b)
 
 #ifdef BUILD_ESP32
     xSemaphoreTake(q->mutex, portMAX_DELAY);
-#elif !defined(RP2350_BUILD) && !defined(__wasm__)
+#elif !defined(RP2350_BUILD) && !defined(__wasm__) && !defined(FRANK_PORT)
     pthread_mutex_lock(&q->mutex);
 #endif
 
     if (q->count >= PS2_QUEUE_SIZE) {
 #ifdef BUILD_ESP32
         xSemaphoreGive(q->mutex);
-#elif !defined(RP2350_BUILD) && !defined(__wasm__)
+#elif !defined(RP2350_BUILD) && !defined(__wasm__) && !defined(FRANK_PORT)
         pthread_mutex_unlock(&q->mutex);
 #endif
         return;
@@ -509,7 +509,7 @@ void ps2_queue(void *opaque, int b)
 
 #ifdef BUILD_ESP32
     xSemaphoreGive(q->mutex);
-#elif !defined(RP2350_BUILD) && !defined(__wasm__)
+#elif !defined(RP2350_BUILD) && !defined(__wasm__) && !defined(FRANK_PORT)
     pthread_mutex_unlock(&q->mutex);
     s->update_irq(s->update_arg, 1);
 #else
@@ -625,7 +625,7 @@ uint32_t ps2_read_data(void *opaque)
     q = &s->queue;
 #ifdef BUILD_ESP32
     xSemaphoreTake(q->mutex, portMAX_DELAY);
-#elif !defined(RP2350_BUILD) && !defined(__wasm__)
+#elif !defined(RP2350_BUILD) && !defined(__wasm__) && !defined(FRANK_PORT)
     pthread_mutex_lock(&q->mutex);
 #endif
     if (q->count == 0) {
@@ -648,7 +648,7 @@ uint32_t ps2_read_data(void *opaque)
     }
 #ifdef BUILD_ESP32
     xSemaphoreGive(q->mutex);
-#elif !defined(RP2350_BUILD) && !defined(__wasm__)
+#elif !defined(RP2350_BUILD) && !defined(__wasm__) && !defined(FRANK_PORT)
     pthread_mutex_unlock(&q->mutex);
 #endif
     return val;
@@ -953,7 +953,7 @@ static void ps2_reset(void *opaque)
     q->count = 0;
 #ifdef BUILD_ESP32
     s->queue.mutex = xSemaphoreCreateMutex();
-#elif !defined(RP2350_BUILD) && !defined(__wasm__)
+#elif !defined(RP2350_BUILD) && !defined(__wasm__) && !defined(FRANK_PORT)
     pthread_mutex_init(&s->queue.mutex, NULL);
 #endif
 }

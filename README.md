@@ -6,6 +6,10 @@ i386 PC Emulator for RP2350 (Raspberry Pi Pico 2) with VGA/HDMI output, SD card 
 
 Based on [Tiny386](https://github.com/hchunhui/tiny386) by Chunhui He.
 
+> **Raspberry Pi 4:** this repository also contains a bare-metal port for the
+> Raspberry Pi 4 / 400 / CM4 (Circle-based, no Linux) and a Linux/SDL2 build.
+> See [`port/README.md`](port/README.md) (in Italian).
+
 ## Features
 
 - Full i386 (and partially i486/i586) CPU emulation with optional x87 FPU

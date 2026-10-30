@@ -47,13 +47,20 @@ typedef enum {
     SETTING_NES_JOYSTICK,
     SETTING_USB_JOYSTICK,
     SETTING_MOUSE_INVERT_Y,
+#ifdef FRANK_PORT
+    /* Raspberry Pi 4: the RP2350 clock/voltage/output items below are
+     * meaningless, so the menu ends here. */
+    SETTING_COUNT,
+#endif
     SETTING_CPU_FREQ,
     SETTING_VOLTAGE,
     SETTING_PSRAM_FREQ,
     SETTING_FLASH_FREQ,
     SETTING_AUDIO_OUTPUT,
     SETTING_VIDEO_OUTPUT,
+#ifndef FRANK_PORT
     SETTING_COUNT
+#endif
 } SettingItem;
 
 // Option values

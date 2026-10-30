@@ -1028,7 +1028,16 @@ PC *pc_new(SimpleFBDrawFunc *redraw, void (*poll)(void *), void *redraw_data,
 	f_open(&ports_log, "ports.log", FA_WRITE | FA_CREATE_ALWAYS);
 #endif
 	PC *pc = malloc(sizeof(PC));
+#ifdef FRANK_PORT
+	/* Raspberry Pi 4: guest RAM comes from the host heap (SDRAM). */
+	char *mem = pcmalloc(conf->mem_size);
+	if (!mem) {
+		free(pc);
+		return NULL;
+	}
+#else
     char *mem = (uint8_t*)0x11000000;
+#endif
 	CPU_CB *cb = NULL;
 	memset(mem, 0, conf->mem_size);
 #ifdef BUILD_ESP32
@@ -1051,7 +1060,7 @@ PC *pc_new(SimpleFBDrawFunc *redraw, void (*poll)(void *), void *redraw_data,
 	pc->initrd = conf->initrd;
 	pc->cmdline = conf->cmdline;
 	pc->enable_serial = conf->enable_serial;
-#if !defined(_WIN32) && !defined(__wasm__)
+#if !defined(_WIN32) && !defined(__wasm__) && !defined(FRANK_PORT)
 	if (pc->enable_serial)
 		CaptureKeyboardInput();
 #endif
@@ -1155,8 +1164,16 @@ PC *pc_new(SimpleFBDrawFunc *redraw, void (*poll)(void *), void *redraw_data,
 	 * pages (dword offsets 0 / 16640 / 33280, up to byte 133120) are never
 	 * dropped.  Old SD-card configs with vga_mem=128K would otherwise leave
 	 * the third page zeroed (black) due to the size check in vga_mem_write. */
+#ifdef FRANK_PORT
+	/* Raspberry Pi 4: VRAM is ordinary heap memory, at least 256 KB so the
+	 * Wolf3D page layout described above still fits; more enables larger
+	 * VBE modes. */
+	pc->vga_mem_size = conf->vga_mem_size > (256 << 10) ? conf->vga_mem_size : (256 << 10);
+	pc->vga_mem = pcmalloc(pc->vga_mem_size);
+#else
 	pc->vga_mem_size = 256u << 10;   /* fixed: gfx_buffer is always 256 KB */
 	pc->vga_mem = gfx_buffer;
+#endif
 	memset(pc->vga_mem, 0, pc->vga_mem_size);
 	pc->vga = vga_init(pc->vga_mem, pc->vga_mem_size,
 			   fb, conf->width, conf->height);
@@ -1298,7 +1315,26 @@ int parse_conf_ini(void* user, const char* section,
 		} else if (NAME("vga_bios")) {
 			conf->vga_bios = strdup(value);
 		} else if (NAME("mem_size") || NAME("mem")) {
+#ifdef FRANK_PORT
+			/* Raspberry Pi 4: guest RAM is configurable ("16M", "32768K", bytes). */
+			char *end = NULL;
+			long v = strtol(value, &end, 0);
+			if (end && (*end == 'M' || *end == 'm')) v <<= 20;
+			else if (end && (*end == 'K' || *end == 'k')) v <<= 10;
+			if (v >= (1 << 20) && v <= (256L << 20))
+				conf->mem_size = v;
+#else
 			/* Obsolete: guest RAM follows physically detected QSPI PSRAM. */
+#endif
+		} else if (NAME("vga_mem")) {
+#ifdef FRANK_PORT
+			char *end = NULL;
+			long v = strtol(value, &end, 0);
+			if (end && (*end == 'M' || *end == 'm')) v <<= 20;
+			else if (end && (*end == 'K' || *end == 'k')) v <<= 10;
+			if (v >= (256 << 10) && v <= (16L << 20))
+				conf->vga_mem_size = v;
+#endif
 		} else if (NAME("cpu")) {
 			conf->cpu_gen = atoi(value);
 		} else if (NAME("hda")) {

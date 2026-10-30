@@ -11,6 +11,11 @@
 #ifndef BOARD_CONFIG_H
 #define BOARD_CONFIG_H
 
+#ifdef FRANK_PORT
+/* Raspberry Pi 4 port: no RP2350 board wiring. */
+#include "port_board_config.h"
+#else /* !FRANK_PORT */
+
 #include "hardware/structs/sysinfo.h"
 #include "hardware/vreg.h"
 
@@ -586,5 +591,7 @@ static inline uint get_psram_pin(void) {
 #else
 #define DEBUG_PRINTF(...)
 #endif
+
+#endif /* FRANK_PORT */
 
 #endif // BOARD_CONFIG_H

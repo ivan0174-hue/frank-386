@@ -19,7 +19,7 @@
 #include <unistd.h>
 #endif
 
-#if !defined(_WIN32) && !defined(__wasm__) && !defined(RP2350_BUILD)
+#if !defined(_WIN32) && !defined(__wasm__) && !defined(RP2350_BUILD) && !defined(FRANK_PORT)
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <signal.h>
@@ -28,7 +28,7 @@
 #include "driver/uart.h"
 #endif
 
-#if !defined(_WIN32) && !defined(__wasm__) && !defined(RP2350_BUILD)
+#if !defined(_WIN32) && !defined(__wasm__) && !defined(RP2350_BUILD) && !defined(FRANK_PORT)
 static void CtrlC(int _)
 {
 	exit( 0 );
@@ -279,7 +279,7 @@ void u8250_reg_write(U8250 *uart, int off, uint8_t val)
 			uart->dll = val;
 			break;
 		} else {
-#if !defined(__wasm__) && !defined(RP2350_BUILD)
+#if !defined(__wasm__) && !defined(RP2350_BUILD) && !defined(FRANK_PORT)
 			ssize_t r;
 			do {
 				r = write(uart->out_fd, &val, 1);
@@ -313,7 +313,7 @@ void u8250_reg_write(U8250 *uart, int off, uint8_t val)
 
 void u8250_update(U8250 *uart)
 {
-#if !defined(_WIN32) && !defined(__wasm__) && !defined(RP2350_BUILD)
+#if !defined(_WIN32) && !defined(__wasm__) && !defined(RP2350_BUILD) && !defined(FRANK_PORT)
 	if (IsKBHit()) {
 		if (!(uart->ioready & 1)) {
 			uart->in = ReadKBByte();
@@ -339,11 +339,18 @@ void u8250_update(U8250 *uart)
 
 static uint32_t cmos_get_timer(CMOS *s)
 {
+#ifdef FRANK_PORT
+	/* Raspberry Pi 4 port: monotonic clock from the platform HAL. */
+	extern uint64_t port_time_us(void);
+	(void)s;
+	return (uint32_t)(port_time_us() * CMOS_FREQ / 1000000u);
+#else
 	struct timespec ts;
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	return (uint32_t)ts.tv_sec * CMOS_FREQ +
 		((uint64_t)ts.tv_nsec * CMOS_FREQ / 1000000000);
+#endif
 }
 
 static void cmos_update_timer(CMOS *s)

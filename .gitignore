@@ -19,3 +19,16 @@ wifikbd
 initnet
 release
 .vscode/
+# Raspberry Pi 4 port build outputs
+port/sdl/build*/
+port/sdl/frank386
+port/sdl/*.img
+port/circle/obj/
+port/circle/*.o
+port/circle/*.d
+port/circle/*.elf
+port/circle/*.img
+port/circle/*.lst
+port/circle/*.map
+port/circle/dist/
+port/circle/.tools/
