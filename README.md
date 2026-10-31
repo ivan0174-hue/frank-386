@@ -1,6 +1,8 @@
 # FRANK 386 — versione per Raspberry Pi 4
 
 > **Questo fork aggiunge il port per Raspberry Pi 4 / 400 / CM4, bare metal (senza Linux).**
+> **Provato e funzionante su Raspberry Pi 4.**
+>
 > Il Pi avvia direttamente l'emulatore PC 386/486 in circa 2 secondi, con uscita HDMI,
 > tastiera, mouse e gamepad USB, audio HDMI o jack 3,5 mm.
 >

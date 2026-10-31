@@ -159,13 +159,12 @@ non cambia):
 
 ## Stato e limiti
 
-- Verificato: la build Linux/SDL avvia SeaBIOS e DR-DOS, esegue programmi (MEM, Norton
-  SysInfo), il modo grafico 13h e i menu OSD; il kernel bare metal, compilato con lo stesso
-  codice per Pi 3 ed eseguito in QEMU, monta la SD, carica il BIOS e avvia DR-DOS
-  mostrando l'immagine sull'uscita HDMI emulata.
-- **Non ancora provato su un Raspberry Pi 4 reale**: USB xHCI, EMMC2 e audio HDMI/PWM usano
-  i driver standard di Circle, ma vanno verificati sull'hardware. Se qualcosa non va,
-  il log sulla seriale (GPIO14) dice in che punto.
+- **Provato e funzionante su Raspberry Pi 4**: avvio bare metal da SD, uscita HDMI,
+  tastiera USB e audio.
+- Verificato anche in sviluppo: la build Linux/SDL avvia SeaBIOS e DR-DOS ed esegue
+  programmi (MEM, Norton SysInfo), il modo grafico 13h e i menu OSD; lo stesso kernel,
+  compilato per Pi 3, si avvia in QEMU.
+- Se qualcosa non va, il log sulla seriale (GPIO14, 115200 8N1) dice in che punto.
 - L'emulatore è un interprete: un Pi 4 a 1,5 GHz è molto più veloce di un RP2350, ma
   non aspettarti un Pentium; l'overclock a 2 GHz aiuta.
 - Rete (NE2000) disattivata come nella versione RP2350.
