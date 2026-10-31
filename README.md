@@ -1,14 +1,27 @@
-# FRANK 386
+# FRANK 386 — versione per Raspberry Pi 4
+
+> **Questo fork aggiunge il port per Raspberry Pi 4 / 400 / CM4, bare metal (senza Linux).**
+> Il Pi avvia direttamente l'emulatore PC 386/486 in circa 2 secondi, con uscita HDMI,
+> tastiera, mouse e gamepad USB, audio HDMI o jack 3,5 mm.
+>
+> - Istruzioni complete in italiano: **[`port/README.md`](port/README.md)**
+> - Codice del Raspberry Pi 4: cartella [`port/`](port/)
+> - Compilare kernel e scheda SD: `cd port/circle && ./build.sh`
+> - File da copiare sulla SD (configurazione e disco DR-DOS di prova): [`port/circle/sdcard/`](port/circle/sdcard/)
+>
+> Avvio rapido: SD formattata FAT32 → copia il contenuto di `port/circle/dist/sdcard/`
+> (creato da `build.sh`) → HDMI + tastiera USB → accendi.
+> Tasti: **Win+F12** gestione dischi, **Win+F11** impostazioni.
+
+---
+
+## FRANK 386 (progetto originale per RP2350)
 
 Official page: **[frank.rh1.tech](https://frank.rh1.tech/)** — hub for all FRANK boards and firmware.
 
 i386 PC Emulator for RP2350 (Raspberry Pi Pico 2) with VGA/HDMI output, SD card storage, PS/2 and USB keyboard/mouse, NES gamepad, and audio output.
 
 Based on [Tiny386](https://github.com/hchunhui/tiny386) by Chunhui He.
-
-> **Raspberry Pi 4:** this repository also contains a bare-metal port for the
-> Raspberry Pi 4 / 400 / CM4 (Circle-based, no Linux) and a Linux/SDL2 build.
-> See [`port/README.md`](port/README.md) (in Italian).
 
 ## Features
 
